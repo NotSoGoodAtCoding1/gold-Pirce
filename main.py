@@ -56,17 +56,18 @@ fig1 = ff.create_annotated_heatmap(x = x,
 fig1.show()
 df817=df[df['Year'].isin(range(2008,2016))]
 df18=df[df['Year'].isin(range(2017,2019))]
-dfsr=df18['GLD']
+gld=df18['GLD']
 x = df817[['SPX','USO','SLV','EUR/USD']]
 y = df817['GLD']
-x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.2, random_state=42)
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.3, random_state=4)
 #X_train = x_train.values.reshape(-1, 1, 4)
 #X_test =x_test.values.reshape(-1, 1, 4)
 scaler = MinMaxScaler()
 x_train_scaled = scaler.fit_transform(x_train)
 x_test_scaled = scaler.transform(x_test)
 model=Sequential()
-model.add(Dense(256,activation='relu',input_dim=4))
+model.add(Dense(512,activation='relu',input_dim=4))
+model.add(Dense(256,activation='relu'))
 model.add(Dense(128,activation='relu'))
 model.add(Dense(64,activation='relu'))
 model.add(Dense(32,activation='relu'))
@@ -77,9 +78,6 @@ model.fit(x_train_scaled, y_train, epochs=700, verbose=0)
 preds = model.predict(x_test_scaled)
 print(r2_score(y_test, preds))
 y_test= list(y_test)
-out=pd.DataFrame(columns=['real','pred'])
-out['real']=y_test
-out['pred']=preds
 plt.plot(y_test,color="blue",label="Действ цена")
 plt.plot(preds,color="green",label="Предсказанная цена")
 plt.title("Предсказанная и действительная цены")
@@ -90,15 +88,19 @@ df.reset_index(drop=True)
 df18=df18.drop('Date', axis=1)
 df18.reset_index(drop=True)
 next_year=df18[['SPX','USO','SLV','EUR/USD']]
+next_year=scaler.transform(next_year)
 next_year_preds = model.predict(next_year)
 df18['GLD']=next_year_preds
 print(df18.head)
-#mapedf = np.mean(np.abs((df18['GLD']) - next_year_preds / df18['GLD'])) * 100
+mapedf = np.mean(np.abs( gld- df18['GLD']) /(gld) ) * 100
 mape = np.mean(np.abs((y_test - preds) / y_test)) * 100
 mae = mean_absolute_error(y_test, preds)
 mse = mean_squared_error(y_test, preds)
 rmse = np.sqrt(mse)
 r2 = r2_score(y_test,preds )
+out=pd.DataFrame(columns=['real','pred'])
+out['real']=y_test
+out['pred']=preds
 out.to_csv('gld_price_pred', sep='\t')
 print("Метрики работы модели:")
 print("__________________________________________________________________")
@@ -107,5 +109,5 @@ print("Mean Absolute Error: ", mae)
 print("Mean Squared Error: ", mse)
 print("Root Mean Squared Error: ", rmse)
 print("R^2: ", r2)
-#print("Percentage Mean Absolute Error: ", mapedf)
+print("Percentage Mean Absolute Error: ", mapedf)
 print("__________________________________________________________________")
