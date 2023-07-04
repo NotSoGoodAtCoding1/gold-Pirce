@@ -55,11 +55,11 @@ fig1 = ff.create_annotated_heatmap(x = x,
                                   annotation_text = np.around(z, decimals=2))
 fig1.show()
 df817=df[df['Year'].isin(range(2008,2016))]
-df18=df[df['Year'].isin(range(2017,2018))]
+df18=df[df['Year'].isin(range(2017,2019))]
 dfsr=df18['GLD']
 x = df817[['SPX','USO','SLV','EUR/USD']]
 y = df817['GLD']
-x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.2, random_state=7)
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.2, random_state=42)
 #X_train = x_train.values.reshape(-1, 1, 4)
 #X_test =x_test.values.reshape(-1, 1, 4)
 scaler = MinMaxScaler()
@@ -67,13 +67,13 @@ x_train_scaled = scaler.fit_transform(x_train)
 x_test_scaled = scaler.transform(x_test)
 model=Sequential()
 model.add(Dense(256,activation='relu',input_dim=4))
-#model.add(Dense(128,activation='relu'))
+model.add(Dense(128,activation='relu'))
 model.add(Dense(64,activation='relu'))
 model.add(Dense(32,activation='relu'))
 model.add(Dense(16,activation='relu'))
 model.add(Dense(1,activation='linear'))
 model.compile(loss='mean_squared_error',optimizer='adam')
-model.fit(x_train_scaled, y_train, epochs=500, verbose=0)
+model.fit(x_train_scaled, y_train, epochs=700, verbose=0)
 preds = model.predict(x_test_scaled)
 print(r2_score(y_test, preds))
 y_test= list(y_test)
